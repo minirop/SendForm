@@ -20,6 +20,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QHashIterator>
+#include <ctime>
 
 ////////////////////////////////////////////////////////////
 /// Constructor
@@ -128,7 +129,7 @@ void SendForm::clearFields()
 ////////////////////////////////////////////////////////////
 QNetworkReply * SendForm::post( QNetworkAccessManager * manager )
 {
-	QByteArray boundary = "let's get the party starting !"; // randomize some time ?
+	QByteArray boundary = generateBoundary();
 	
 	QByteArray temp_data;
 	
@@ -187,7 +188,7 @@ QNetworkReply * SendForm::post( QNetworkAccessManager * manager )
 		temp_data.remove(0, 1);
 	}
 	
-	m_request.setRawHeader( "Content-Length", QString::number( temp_data.size() ).toAscii() );
+	m_request.setRawHeader( "Content-Length", QByteArray::number( temp_data.size() ) );
 	
 	return manager->post( m_request, temp_data );
 }
@@ -208,11 +209,26 @@ void SendForm::removeMultipart()
 	m_forcemultipart = false;
 }
 
+QByteArray SendForm::generateBoundary()
+{
+	QByteArray bchars = "0123456789AZERTYUIOPQSDFGHJKLMWXCVBNazertyuiopqsdfghjklmwxcvbn'()+_,-./:=?";
+	QByteArray boundary;
+	
+	for(int i = 0;i < 60;i++) // boundary can be only between 1 and 70 characters (I chose 60 arbitrarily).
+	{
+		boundary += bchars[qrand()%bchars.length()];
+	}
+	
+	return boundary;
+}
+
 bool SendForm::m_initialized = false;
 QHash< QString, QByteArray > SendForm::mimeTypes;
 
 void SendForm::init()
 {
+	qsrand(time(0));
+	
 	mimeTypes["323"] = "text/h323";
 	mimeTypes["acx"] = "application/internet-property-stream";
 	mimeTypes["ai"] = "application/postscript";

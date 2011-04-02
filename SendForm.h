@@ -166,6 +166,8 @@ private:
 	QHash< QString, QString > m_fields;
 	bool m_forcemultipart;
 	
+	QByteArray generateBoundary();
+	
 	static void init();
 	static bool m_initialized;
 	static QHash< QString, QByteArray > mimeTypes;
